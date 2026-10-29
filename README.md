@@ -89,9 +89,9 @@ changes, volume anomalies, and freshness issues, then emits explainable alerts â
 ### Install
 
 ```bash
-git clone https://github.com/skmc03/data-monitoring.git
-cd data-monitoring
-pip install -r requirements.txt
+git clone https://github.com/skmc03/data-quality-monitor.git
+cd data-quality-monitor
+python -m pip install -r requirements.txt
 ```
 
 ### Generate sample data
@@ -173,7 +173,7 @@ pytest tests/test_comparator.py -v
 pytest tests/test_validate.py::TestDuplicateTransactionId -v
 ```
 
-Expected output: **109 tests, 0 failures**.
+Expected output: **121 tests, 0 failures**. See `SUBMISSION_EVIDENCE.md` for recorded results.
 
 ---
 
@@ -192,6 +192,7 @@ Expected output: **109 tests, 0 failures**.
 {
   "alert_id": "a3f2c1...",
   "run_id": "RUN_001",
+  "baseline_run_id": "RUN_001_BASELINE",
   "column": "is_flagged",
   "metric": "null_rate",
   "severity": "CRITICAL",

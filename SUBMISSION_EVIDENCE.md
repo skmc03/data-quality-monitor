@@ -18,7 +18,8 @@
 | Tests collected | 121 |
 | Tests passed | **121** |
 | Tests failed | **0** |
-| Test runtime | 31.84 s |
+| Standard test runtime | 31.62 s |
+| Coverage test runtime | 31.84 s |
 | Statement coverage | **83%** |
 | Pipeline modules measured | 8 |
 
@@ -72,11 +73,11 @@ python run_pipeline.py \
 
 ### Detected drift (baseline vs current)
 
-| Metric | Baseline | Current | Delta | Severity |
+| Metric | Baseline value | Current value | Delta | Severity |
 |---|---|---|---|---|
 | `is_flagged` null rate | 1.70% | 15.31% | +13.61 pp | WARN |
-| `amount` distribution PSI | 373.50 mean | 9229.51 mean | PSI=4.40 | CRITICAL |
-| `transaction_date` freshness | 48h threshold | 572.63h lag | +524.63h | CRITICAL |
+| `amount` PSI (baseline mean) | 373.50 | (current mean) 9229.51 | PSI score = 4.40 | CRITICAL |
+| `transaction_date` freshness | 48h max lag | 572.63h actual lag | +524.63h over threshold | CRITICAL |
 | `merchant_id` new categories | — | 20 new merchants | — | WARN ×20 |
 | `merchant_id` missing categories | 19 absent | — | — | INFO ×19 |
 
@@ -127,6 +128,19 @@ python run_pipeline.py \
 | `outputs/quarantine.csv` | 40 rejected records with rejection_reason |
 | `outputs/reconciliation_report.json` | 7-check report, all passed |
 | `db/pipeline.duckdb` | All pipeline state (profiles, runs, quarantine) |
+
+---
+
+## Generator Determinism Verification
+
+Two independent runs of `python data/generate_sample.py` produce byte-identical files:
+
+| File | SHA-256 |
+|---|---|
+| `sample_baseline.csv` | `EEDF066E88CE30F542A3FD2969809DD5B152D40CA94AD4D3468CA0EE1CA9AB7B` |
+| `sample_batch.csv` | `53691411CFCA859A09E4D9049CAA0CE469D12A0C477B384FD0960BACBB29A9A8` |
+
+Achieved by using a fixed reference timestamp (`2026-10-01T00:00:00Z`) and a seeded NumPy RNG (`seed=42`) instead of `datetime.now()`.
 
 ---
 
