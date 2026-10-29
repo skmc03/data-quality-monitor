@@ -1,1 +1,77 @@
-
+{
+  "version": "1.0.0",
+  "description": "Financial transactions source schema",
+  "fields": [
+    {
+      "name": "transaction_id",
+      "type": "string",
+      "nullable": false,
+      "primary_key": true,
+      "description": "Unique transaction identifier"
+    },
+    {
+      "name": "customer_id",
+      "type": "string",
+      "nullable": false,
+      "description": "Foreign key to customer entity"
+    },
+    {
+      "name": "transaction_date",
+      "type": "timestamp",
+      "nullable": false,
+      "format": "ISO-8601",
+      "description": "UTC timestamp of transaction"
+    },
+    {
+      "name": "amount",
+      "type": "float",
+      "nullable": false,
+      "constraints": {
+        "min": 0.01
+      },
+      "description": "Transaction amount in specified currency, must be > 0"
+    },
+    {
+      "name": "currency",
+      "type": "string",
+      "nullable": false,
+      "allowed_values": ["USD", "EUR", "GBP", "INR"],
+      "description": "ISO 4217 currency code"
+    },
+    {
+      "name": "category",
+      "type": "string",
+      "nullable": false,
+      "allowed_values": ["retail", "travel", "food", "utilities", "healthcare"],
+      "description": "Merchant category"
+    },
+    {
+      "name": "merchant_id",
+      "type": "string",
+      "nullable": false,
+      "description": "Merchant identifier"
+    },
+    {
+      "name": "status",
+      "type": "string",
+      "nullable": false,
+      "allowed_values": ["completed", "pending", "failed", "refunded"],
+      "description": "Transaction processing status"
+    },
+    {
+      "name": "country_code",
+      "type": "string",
+      "nullable": false,
+      "constraints": {
+        "length": 2
+      },
+      "description": "ISO 3166-1 alpha-2 country code"
+    },
+    {
+      "name": "is_flagged",
+      "type": "boolean",
+      "nullable": true,
+      "description": "Fraud-flag indicator; NULL allowed in source but treated as missing"
+    }
+  ]
+}
