@@ -81,8 +81,9 @@ def _print_summary(
     rejected_count: int,
     alerts: list,
     elapsed: float,
+    drift_results: Optional[list] = None,
 ) -> None:
-    divider = "=" * 60
+    divider = "=" * 64
     print(f"\n{divider}")
     print(f"  DATA QUALITY MONITOR — RUN SUMMARY")
     print(divider)
@@ -99,6 +100,21 @@ def _print_summary(
         count = by_sev.get(sev, 0)
         if count:
             print(f"    {sev:10s}: {count}")
+
+    if drift_results:
+        print(f"\n  {'Metric':<30} {'Baseline':>10} {'Current':>10} {'Delta':>10} {'Result':<10}")
+        print(f"  {'-'*30} {'-'*10} {'-'*10} {'-'*10} {'-'*10}")
+        for dr in drift_results:
+            label = f"{dr.column}/{dr.metric}"[:30]
+            def _fmt(v):
+                if v is None:
+                    return "—"
+                if isinstance(v, float):
+                    return f"{v:.4f}"
+                return str(v)
+            delta_str = _fmt(dr.delta) if hasattr(dr, "delta") else "—"
+            print(f"  {label:<30} {_fmt(dr.baseline_value):>10} {_fmt(dr.current_value):>10} {delta_str:>10} {dr.severity:<10}")
+
     print(divider + "\n")
 
 
@@ -238,6 +254,7 @@ def run_pipeline(
             run_id=run_id,
             output_path=alerts_path,
             log_level=log_level,
+            baseline_run_id=f"{run_id}_BASELINE",
         )
 
         # ---- Step 12: Reconciliation ------------------------------------
@@ -265,6 +282,7 @@ def run_pipeline(
             rejected_count=rejected_count,
             alerts=alerts,
             elapsed=tracker.elapsed_seconds(),
+            drift_results=drift_results,
         )
 
         return 0

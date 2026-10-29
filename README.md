@@ -89,7 +89,8 @@ changes, volume anomalies, and freshness issues, then emits explainable alerts â
 ### Install
 
 ```bash
-cd data-quality-monitor
+git clone https://github.com/skmc03/data-monitoring.git
+cd data-monitoring
 pip install -r requirements.txt
 ```
 
