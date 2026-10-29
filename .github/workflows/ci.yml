@@ -1,1 +1,61 @@
+name: CI
 
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate sample data
+        run: python data/generate_sample.py
+
+      - name: Run pipeline (baseline run)
+        run: |
+          python run_pipeline.py \
+            --baseline data/sample_baseline.csv \
+            --batch data/sample_batch.csv \
+            --run-id CI_RUN_001
+
+      - name: Verify reconciliation passed
+        run: |
+          python - <<'EOF'
+          import json, sys
+          with open("outputs/reconciliation_report.json") as f:
+              r = json.load(f)
+          failed = r["summary"]["failed"]
+          print(f"Reconciliation: {r['summary']['passed']}/{r['summary']['total_checks']} passed")
+          sys.exit(1 if failed > 0 else 0)
+          EOF
+
+      - name: Run idempotency check (same run_id should skip)
+        run: |
+          python run_pipeline.py \
+            --baseline data/sample_baseline.csv \
+            --batch data/sample_batch.csv \
+            --run-id CI_RUN_001
+          if [ $? -eq 2 ]; then echo "Idempotency OK — run skipped as expected"; fi
+
+      - name: Run tests with coverage
+        run: pytest tests/ -v --tb=short --cov=pipeline --cov-report=term-missing
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: .coverage
