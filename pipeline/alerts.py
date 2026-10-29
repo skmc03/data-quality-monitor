@@ -40,6 +40,7 @@ def generate_alerts(
     output_path: str = "outputs/alerts.json",
     log_level: str = "INFO",
     min_severity: str = "INFO",
+    baseline_run_id: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     """
     Convert DriftResult objects into structured alert dictionaries and write
@@ -71,6 +72,7 @@ def generate_alerts(
         alert: Dict[str, Any] = {
             "alert_id": alert_id,
             "run_id": run_id,
+            "baseline_run_id": baseline_run_id or f"{run_id}_BASELINE",
             "column": dr.column,
             "metric": dr.metric,
             "severity": dr.severity,

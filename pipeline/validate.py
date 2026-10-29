@@ -3,15 +3,17 @@ Validate module — schema validation, business rules, duplicate detection.
 
 Rules applied (in order)
 ------------------------
-1. Required columns present (schema check).
-2. Required fields not null.
-3. Type coercion check (amount must be numeric).
-4. Business rule: amount > 0.
-5. Business rule: currency in allowed enum.
-6. Business rule: category in allowed enum.
-7. Business rule: status in allowed enum.
-8. Business rule: country_code is exactly 2 characters.
-9. Duplicate transaction_id detection.
+1.  Required columns present (schema check).
+2.  Required fields not null.
+3.  Type coercion check (amount must be numeric).
+4.  Business rule: amount > 0.
+5.  Business rule: currency in allowed enum.
+6.  Business rule: category in allowed enum.
+7.  Business rule: status in allowed enum.
+8.  Business rule: country_code is exactly 2 characters.
+9.  Referential integrity: customer_id must exist in customers.csv.
+10. Referential integrity: merchant_id must exist in merchants.csv.
+11. Duplicate transaction_id detection.
 
 Returns a (valid_df, rejected_df) tuple.
 rejected_df carries original columns plus:
@@ -22,11 +24,24 @@ from __future__ import annotations
 
 import json
 import os
-from typing import Optional, Tuple
+from typing import Optional, Set, Tuple
 
 import pandas as pd
 
 from pipeline.logger import get_logger
+
+# Reference data paths (resolved relative to project root)
+_DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
+_CUSTOMERS_CSV = os.path.join(_DATA_DIR, "customers.csv")
+_MERCHANTS_CSV = os.path.join(_DATA_DIR, "merchants.csv")
+
+
+def _load_reference_set(path: str) -> Optional[Set[str]]:
+    """Load a single-column reference CSV into a set of valid IDs. Returns None if file missing."""
+    if not os.path.exists(path):
+        return None
+    df = pd.read_csv(path, dtype=str)
+    return set(df.iloc[:, 0].dropna().str.strip())
 
 
 # ---------------------------------------------------------------------------
@@ -158,8 +173,31 @@ def validate(
             f"country_code must be 2 chars (got '{df.at[idx, 'country_code']}')"
         )
 
-    # 8. Duplicate transaction_id detection
-    #    Mark the later duplicates as rejected; keep the first occurrence.
+    # 8. Referential integrity: customer_id must exist in customers.csv
+    known_customers = _load_reference_set(_CUSTOMERS_CSV)
+    if known_customers is not None:
+        bad_customer_ref = (
+            df["customer_id"].notna() &
+            ~df["customer_id"].astype(str).isin(known_customers)
+        )
+        for idx in df.index[bad_customer_ref]:
+            rejection_reasons[idx].append(
+                f"unknown_customer_id '{df.at[idx, 'customer_id']}'"
+            )
+
+    # 9. Referential integrity: merchant_id must exist in merchants.csv
+    known_merchants = _load_reference_set(_MERCHANTS_CSV)
+    if known_merchants is not None:
+        bad_merchant_ref = (
+            df["merchant_id"].notna() &
+            ~df["merchant_id"].astype(str).isin(known_merchants)
+        )
+        for idx in df.index[bad_merchant_ref]:
+            rejection_reasons[idx].append(
+                f"unknown_merchant_id '{df.at[idx, 'merchant_id']}'"
+            )
+
+    # 11. Duplicate transaction_id detection — keep first occurrence
     dup_mask = df.duplicated(subset=["transaction_id"], keep="first")
     for idx in df.index[dup_mask]:
         rejection_reasons[idx].append(
