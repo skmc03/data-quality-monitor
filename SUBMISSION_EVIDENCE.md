@@ -73,13 +73,14 @@ python run_pipeline.py \
 
 ### Detected drift (baseline vs current)
 
-| Metric | Baseline value | Current value | Delta | Severity |
-|---|---|---|---|---|
-| `is_flagged` null rate | 1.70% | 15.31% | +13.61 pp | WARN |
-| `amount` PSI (baseline mean) | 373.50 | (current mean) 9229.51 | PSI score = 4.40 | CRITICAL |
-| `transaction_date` freshness | 48h max lag | 572.63h actual lag | +524.63h over threshold | CRITICAL |
-| `merchant_id` new categories | — | 20 new merchants | — | WARN ×20 |
-| `merchant_id` missing categories | 19 absent | — | — | INFO ×19 |
+| Metric | Baseline | Current | Result |
+|---|---|---|---|
+| `is_flagged` null rate | 1.70% | 15.31% (+13.61 pp) | WARN — exceeds 5 pp threshold |
+| Mean transaction amount | 373.50 | 9,229.51 | — (context for PSI below) |
+| `amount` distribution PSI | Reference distribution | PSI score = 4.40 | CRITICAL — PSI > 0.25 indicates major population shift |
+| `transaction_date` freshness lag | 48h max threshold | 572.63h actual lag | CRITICAL — 524h over threshold |
+| `merchant_id` new categories | — | 20 merchants not in baseline | WARN ×20 |
+| `merchant_id` missing categories | 19 merchants absent from batch | — | INFO ×19 |
 
 ### Reconciliation (7/7 checks passed)
 
