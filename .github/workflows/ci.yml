@@ -29,7 +29,8 @@ jobs:
           python run_pipeline.py \
             --baseline data/sample_baseline.csv \
             --batch data/sample_batch.csv \
-            --run-id CI_RUN_001
+            --run-id CI_RUN_001 \
+            --log-level WARNING
 
       - name: Verify reconciliation passed
         run: |
@@ -47,8 +48,13 @@ jobs:
           python run_pipeline.py \
             --baseline data/sample_baseline.csv \
             --batch data/sample_batch.csv \
-            --run-id CI_RUN_001
-          if [ $? -eq 2 ]; then echo "Idempotency OK — run skipped as expected"; fi
+            --run-id CI_RUN_001 || EXIT=$?
+          if [ "${EXIT:-0}" -eq 2 ]; then
+            echo "Idempotency OK — run skipped as expected (exit 2)"
+          else
+            echo "ERROR: expected exit 2, got ${EXIT:-0}"
+            exit 1
+          fi
 
       - name: Run tests with coverage
         run: pytest tests/ -v --tb=short --cov=pipeline --cov-report=term-missing
