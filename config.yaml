@@ -1,0 +1,22 @@
+database:
+  path: db/pipeline.duckdb
+
+data:
+  baseline_path: data/sample_baseline.csv
+  batch_path: data/sample_batch.csv
+  schema_path: data/schema.json
+
+thresholds:
+  null_rate_delta: 0.05         # alert if null rate changes by >5%
+  volume_delta_pct: 0.20        # alert if volume changes by >20%
+  distribution_psi_threshold: 0.2  # PSI > 0.2 = significant drift
+  freshness_max_lag_hours: 48   # alert if newest record is >48hrs old
+
+output:
+  alerts_path: outputs/alerts.json
+  reconciliation_path: outputs/reconciliation_report.json
+  quarantine_path: outputs/quarantine.csv
+
+logging:
+  level: INFO
+  format: "%(asctime)s | %(levelname)s | run_id=%(run_id)s | %(message)s"
