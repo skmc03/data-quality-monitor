@@ -166,7 +166,7 @@ class TestAlertsWrittenToJson:
         with open(output_path, "r") as fh:
             alerts = json.load(fh)
         required_keys = {
-            "alert_id", "run_id", "column", "metric", "severity",
+            "alert_id", "run_id", "baseline_run_id", "column", "metric", "severity",
             "baseline_value", "current_value", "delta",
             "explanation", "threshold", "triggered_at"
         }

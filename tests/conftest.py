@@ -77,7 +77,7 @@ def sample_valid_df() -> pd.DataFrame:
         rows.append(
             make_valid_row(
                 transaction_id=f"TXN_{i:06d}",
-                customer_id=f"CUST_{rng.integers(1, 100):04d}",
+                customer_id=f"CUST_{rng.integers(1, 5001):05d}",
                 amount=round(float(rng.uniform(10, 2000)), 2),
                 currency=str(rng.choice(currencies)),
                 category=str(rng.choice(categories)),
@@ -115,7 +115,7 @@ def sample_batch_df(sample_valid_df: pd.DataFrame) -> pd.DataFrame:
         rows.append(
             make_valid_row(
                 transaction_id=f"TXN_BATCH_{i:06d}",
-                customer_id=f"CUST_{rng.integers(1, 100):04d}",
+                customer_id=f"CUST_{rng.integers(1, 5001):05d}",
                 amount=round(float(rng.uniform(5000, 50000)), 2),
                 currency=str(rng.choice(currencies)),
                 category=str(rng.choice(categories)),
