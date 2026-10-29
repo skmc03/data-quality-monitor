@@ -24,10 +24,11 @@ CATEGORIES = ["retail", "travel", "food", "utilities", "healthcare"]
 STATUSES = ["completed", "pending", "failed", "refunded"]
 COUNTRY_CODES = ["US", "GB", "DE", "FR", "IN", "CA", "AU", "JP", "SG", "AE"]
 KNOWN_MERCHANTS = [f"MERCH_{i:04d}" for i in range(1, 201)]
+KNOWN_CUSTOMERS = [f"CUST_{i:05d}" for i in range(1, 5001)]
 
-
-def _now_utc() -> datetime:
-    return datetime.now(timezone.utc)
+# Fixed reference timestamp — all synthetic dates derived from this so the
+# generator produces identical output on any machine on any day.
+_REFERENCE_TS = datetime(2026, 10, 1, 0, 0, 0, tzinfo=timezone.utc)
 
 
 def _iso(dt: datetime) -> str:
@@ -45,13 +46,12 @@ def generate_baseline(n: int = 1000, rng: np.random.Generator = None) -> pd.Data
     if rng is None:
         rng = np.random.default_rng(SEED)
 
-    now = _now_utc()
     transaction_ids = [f"TXN_BASE_{i:06d}" for i in range(n)]
-    customer_ids = [f"CUST_{rng.integers(1, 5001):05d}" for _ in range(n)]
+    customer_ids = rng.choice(KNOWN_CUSTOMERS, size=n).tolist()
 
-    # Dates: uniform over last 30 days
+    # Dates: uniform over 30 days before reference timestamp
     seconds_offsets = rng.integers(0, 30 * 24 * 3600, size=n)
-    dates = [_iso(now - timedelta(seconds=int(s))) for s in seconds_offsets]
+    dates = [_iso(_REFERENCE_TS - timedelta(seconds=int(s))) for s in seconds_offsets]
 
     # Amounts: log-normal centred around ~$500, clipped to [10, 5000]
     raw_amounts = rng.lognormal(mean=5.5, sigma=1.0, size=n)
@@ -106,13 +106,12 @@ def generate_batch(n: int = 1000, rng: np.random.Generator = None) -> pd.DataFra
     if rng is None:
         rng = np.random.default_rng(SEED + 1)
 
-    now = _now_utc()
     transaction_ids = [f"TXN_BATCH_{i:06d}" for i in range(n)]
-    customer_ids = [f"CUST_{rng.integers(1, 5001):05d}" for _ in range(n)]
+    customer_ids = rng.choice(KNOWN_CUSTOMERS, size=n).tolist()
 
-    # Dates: uniform over last 5 days (fresh) for most
+    # Dates: uniform over 5 days after reference timestamp (simulates new batch arriving)
     seconds_offsets = rng.integers(0, 5 * 24 * 3600, size=n)
-    dates = [_iso(now - timedelta(seconds=int(s))) for s in seconds_offsets]
+    dates = [_iso(_REFERENCE_TS + timedelta(seconds=int(s))) for s in seconds_offsets]
 
     # Amounts: lognormal with much higher mean -> heavy right skew
     raw_amounts = rng.lognormal(mean=8.0, sigma=1.5, size=n)
@@ -152,11 +151,11 @@ def generate_batch(n: int = 1000, rng: np.random.Generator = None) -> pd.DataFra
 
     # --- Inject anomalies ---
 
-    # 1. Freshness issue: 10% of records have dates 60 days old
+    # 1. Freshness issue: 10% of records have dates 60 days before reference
     stale_indices = rng.choice(n, size=max(1, n // 10), replace=False)
     for idx in stale_indices:
         stale_offset = rng.integers(58 * 24 * 3600, 62 * 24 * 3600)
-        df.at[idx, "transaction_date"] = _iso(now - timedelta(seconds=int(stale_offset)))
+        df.at[idx, "transaction_date"] = _iso(_REFERENCE_TS - timedelta(seconds=int(stale_offset)))
 
     # 2. Schema drift: 5 records with invalid currency 'JPY'
     bad_currency_indices = rng.choice(n, size=min(5, n), replace=False)
@@ -181,11 +180,11 @@ def generate_batch(n: int = 1000, rng: np.random.Generator = None) -> pd.DataFra
     for i, idx in enumerate(bad_merchant_indices):
         df.at[idx, "merchant_id"] = unknown_merchants[i % len(unknown_merchants)]
 
-    # 6. Late-arriving: 15 records with dates before baseline window (>35 days ago)
+    # 6. Late-arriving: 15 records with dates before baseline window (>35 days before reference)
     late_indices = rng.choice(n, size=min(15, n), replace=False)
     for idx in late_indices:
         late_offset = rng.integers(35 * 24 * 3600, 90 * 24 * 3600)
-        df.at[idx, "transaction_date"] = _iso(now - timedelta(seconds=int(late_offset)))
+        df.at[idx, "transaction_date"] = _iso(_REFERENCE_TS - timedelta(seconds=int(late_offset)))
 
     return df
 
@@ -207,6 +206,15 @@ def main():
 
     rng_baseline = np.random.default_rng(SEED)
     rng_batch = np.random.default_rng(SEED + 1)
+
+    # Always write reference data files (customers + merchants)
+    customers_path = os.path.join(args.out_dir, "customers.csv")
+    pd.DataFrame({"customer_id": KNOWN_CUSTOMERS}).to_csv(customers_path, index=False)
+    print(f"  -> Reference: {customers_path} ({len(KNOWN_CUSTOMERS)} customers)")
+
+    merchants_path = os.path.join(args.out_dir, "merchants.csv")
+    pd.DataFrame({"merchant_id": KNOWN_MERCHANTS}).to_csv(merchants_path, index=False)
+    print(f"  -> Reference: {merchants_path} ({len(KNOWN_MERCHANTS)} merchants)")
 
     if not args.batch_only:
         print(f"Generating baseline ({args.rows} rows)...")
