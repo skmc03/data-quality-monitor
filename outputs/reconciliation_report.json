@@ -1,0 +1,84 @@
+{
+  "run_id": "INT_QUAR_001",
+  "generated_at": "2026-10-29T18:49:48Z",
+  "checks": [
+    {
+      "check_id": "ROW_COUNT_RECONCILIATION",
+      "description": "source_count == valid_count + rejected_count (no rows lost)",
+      "status": "PASS",
+      "detail": {
+        "input_count": 100000,
+        "valid_count": 99970,
+        "rejected_count": 30,
+        "sum_valid_rejected": 100000,
+        "rows_unaccounted_for": 0
+      },
+      "message": "Row counts balance correctly."
+    },
+    {
+      "check_id": "NO_DUPLICATE_RUN_IDS",
+      "description": "No duplicate run_id entries in pipeline_runs",
+      "status": "PASS",
+      "detail": {
+        "duplicate_run_ids": []
+      },
+      "message": "No duplicate run_ids found."
+    },
+    {
+      "check_id": "QUARANTINE_REASONS_POPULATED",
+      "description": "All quarantined records have a non-empty rejection_reason",
+      "status": "PASS",
+      "detail": {
+        "records_missing_reason": 0,
+        "run_id": "INT_QUAR_001"
+      },
+      "message": "All quarantined records have rejection reasons."
+    },
+    {
+      "check_id": "BASELINE_PROFILE_EXISTS",
+      "description": "Baseline column profile exists in DB before batch comparison",
+      "status": "PASS",
+      "detail": {
+        "baseline_run_id": "INT_QUAR_001_BASELINE",
+        "profile_rows_found": 9
+      },
+      "message": "Baseline profile found (9 rows)."
+    },
+    {
+      "check_id": "ALERT_ID_DETERMINISM",
+      "description": "Alert IDs are deterministic (SHA-256 of run_id::column::metric)",
+      "status": "PASS",
+      "detail": {
+        "total_alerts_checked": 34,
+        "mismatches": []
+      },
+      "message": "All 34 alert IDs are deterministic."
+    },
+    {
+      "check_id": "QUARANTINE_AGGREGATE_INTEGRITY",
+      "description": "All quarantine rows have rejection_reason (aggregate check)",
+      "status": "PASS",
+      "detail": {
+        "quarantine_rows": 30,
+        "rows_with_reason": 30
+      },
+      "message": "Quarantine integrity OK (30 records)."
+    },
+    {
+      "check_id": "PIPELINE_RUN_REGISTERED",
+      "description": "Exactly one pipeline_runs entry for run_id=INT_QUAR_001",
+      "status": "PASS",
+      "detail": {
+        "run_id": "INT_QUAR_001",
+        "entries_found": 1
+      },
+      "message": "Pipeline run registered correctly (count=1)."
+    }
+  ],
+  "summary": {
+    "total_checks": 7,
+    "passed": 7,
+    "failed": 0,
+    "warnings": 0
+  }
+}
