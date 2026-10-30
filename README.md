@@ -307,4 +307,10 @@ See `data_dictionary.md` for full schema documentation of all source and DuckDB 
 
 ## Design Tradeoffs
 
-See `design_tradeoffs.md` for the reasoning behind key architectural decisions.
+See `design_tradeoffs.md` for the reasoning behind key architectural decisions, including:
+
+- Why DuckDB over Postgres/SQLite
+- PSI binning strategy (equal-width, baseline-fixed bins, edge extension, zero-frequency handling)
+- Deterministic alert IDs via SHA-256
+- Performance benchmarks and applied optimisations
+- Error handling philosophy

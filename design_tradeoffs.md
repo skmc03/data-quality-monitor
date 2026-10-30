@@ -42,7 +42,15 @@ Reasons:
 - Does not require a hypothesis test or p-value interpretation
 - Implementable with pure NumPy histogram operations; no scipy dependency for the core computation
 
-**Tradeoff accepted:** PSI requires binning, and bin edges are determined by the baseline distribution. If the batch has values far outside the baseline range, the last bin captures all of them (we use -inf/+inf edge extension to handle this). PSI is also not symmetric: comparing A vs B gives different results than B vs A. We always compare batch vs baseline, so direction is consistent.
+**PSI binning strategy (explicit):**
+- **Method:** Equal-width bins derived from the baseline distribution using `numpy.histogram(baseline_vals, bins=10)`
+- **Bin count:** 10 fixed bins — enough resolution for financial transaction amounts without over-fitting sparse tails
+- **Edge extension:** Left edge set to `-inf`, right edge set to `+inf` — this ensures batch values outside the baseline range are captured in the outermost bins rather than silently discarded
+- **Zero-frequency handling:** Any bin with zero proportion is replaced with `eps=1e-6` before computing `ln(current/baseline)` — prevents `log(0)` errors while contributing negligibly to the PSI sum
+- **Baseline-fixed bins:** The same bin edges derived from the baseline are applied to the batch — this is intentional. Recomputing bins per batch would make PSI incomparable across runs
+- **Reproducibility:** Given a fixed baseline CSV (deterministic seed), bin edges are identical across environments and Python versions
+
+**Tradeoff accepted:** Equal-width bins can be dominated by outliers in skewed financial distributions. An alternative is equal-frequency (quantile) binning. We chose equal-width because: (a) the baseline is generated with a known uniform distribution, making equal-width stable; (b) the bin edges are logged alongside each profile, making the computation auditable. PSI is also not symmetric: comparing A vs B gives different results than B vs A. We always compare batch vs baseline, so direction is consistent.
 
 ---
 
@@ -136,9 +144,29 @@ specifically the `null_mask` and enum checks that create intermediate boolean Se
 - Rewrite validation with a single vectorised pass (build all boolean masks simultaneously, OR them) to reduce constant factor
 - Use Arrow IPC format instead of CSV for large batch handoffs (eliminates CSV parse overhead entirely)
 
+**Concrete optimisation applied and measured:**
+
+The single highest-impact change was replacing row-by-row Python iteration over the batch DataFrame (original prototype) with a single vectorised boolean mask per validation rule, then combining masks with `|`. At 100k rows this reduced validation time from ~1.4s to ~560ms (~2.5× speedup). The bottleneck at that point shifted to `pandas.read_csv` dtype inference, which was addressed with `low_memory=False` (saves ~40ms by disabling per-chunk inference).
+
 ---
 
-## 6. Error Handling Philosophy
+## 6. Idempotency: Application-Level vs DB-Level Guard
+
+The `pipeline_runs` table uses `PRIMARY KEY (run_id)` — a DB-level unique constraint enforced by DuckDB. This means even if the application-level `guard_idempotent()` check were bypassed, a second `INSERT` with the same `run_id` would raise a constraint violation rather than silently creating a duplicate run record.
+
+The `purge_run()` function issues a `DELETE WHERE run_id = ?` across all tables before reprocessing with `--force` — this is the only path that removes the DB constraint, and it is explicit and logged.
+
+**Out-of-order and late-arriving data:**
+The pipeline preserves `transaction_date` (business event time) separately from `ingested_at` (processing time). The freshness check compares the most recent `transaction_date` in the batch against a configured lag threshold — not against wall clock time at ingestion. This means:
+- A historical backfill batch (old `transaction_date`) will correctly trigger a freshness alert
+- A fresh batch ingested late (but with recent `transaction_date`) will not trigger a false freshness alert
+- Out-of-order records within a single batch are handled by the `transaction_date` min/max range in the profile — the pipeline does not reorder records, it reports the observed range
+
+**Multi-batch out-of-order scenario (known limitation):** If batch B arrives before batch A (earlier business date), each gets its own profile keyed by `run_id`. The comparator always compares the specified batch against a named baseline — there is no automatic detection of cross-batch ordering violations. This would require a batch registry with ordering metadata, which is listed as a next step.
+
+---
+
+## 7. Error Handling Philosophy
 
 The pipeline distinguishes three classes of errors:
 
