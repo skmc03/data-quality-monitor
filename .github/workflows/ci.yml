@@ -30,6 +30,7 @@ jobs:
             --baseline data/sample_baseline.csv \
             --batch data/sample_batch.csv \
             --run-id CI_RUN_001 \
+            --force \
             --log-level WARNING
 
       - name: Verify reconciliation passed
