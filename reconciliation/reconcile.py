@@ -1,23 +1,3 @@
-"""
-Reconciliation module — run data quality assertions and produce a report.
-
-Checks performed
-----------------
-1. Source count == valid + rejected (no rows lost or duplicated)
-2. No duplicate run_id in pipeline_runs
-3. All quarantined records have a non-empty rejection_reason
-4. Baseline profile exists before comparison runs
-5. Alert IDs are deterministic (same inputs produce same alert_ids)
-6. Key aggregates match source:
-      - sum(amount) in valid records (approximate, accounting for rejects)
-      - count by status
-      - count by currency
-
-Output
-------
-outputs/reconciliation_report.json
-"""
-
 from __future__ import annotations
 
 import hashlib
@@ -32,10 +12,6 @@ import pandas as pd
 from pipeline.logger import get_logger
 
 
-# ---------------------------------------------------------------------------
-# Reconciliation entry point (called by run_pipeline.py)
-# ---------------------------------------------------------------------------
-
 def run_reconciliation(
     db_path: str,
     run_id: str,
@@ -46,23 +22,6 @@ def run_reconciliation(
     *,
     log_level: str = "INFO",
 ) -> Dict[str, Any]:
-    """
-    Execute all reconciliation checks and write a JSON report.
-
-    Parameters
-    ----------
-    db_path:        Path to DuckDB file.
-    run_id:         Current batch run_id.
-    input_count:    Total rows ingested from source file.
-    valid_count:    Rows that passed validation.
-    rejected_count: Rows quarantined.
-    config:         Loaded config.yaml dict.
-    log_level:      Logging level.
-
-    Returns
-    -------
-    Report dict (also written to disk).
-    """
     logger = get_logger(__name__, run_id=run_id, level=log_level)
     output = config.get("output", {})
     report_path = output.get("reconciliation_path", "outputs/reconciliation_report.json")
@@ -82,7 +41,6 @@ def run_reconciliation(
 
     checks: List[Dict[str, Any]] = []
 
-    # ---- Check 1: Row count reconciliation ---------------------------------
     checks.append(
         _check_row_count(
             input_count=input_count,
@@ -90,31 +48,18 @@ def run_reconciliation(
             rejected_count=rejected_count,
         )
     )
-
-    # ---- Check 2: No duplicate run_ids in pipeline_runs -------------------
     checks.append(_check_no_duplicate_runs(db_path, run_id))
-
-    # ---- Check 3: All quarantined records have rejection_reason -----------
     checks.append(_check_quarantine_reasons(db_path, run_id))
-
-    # ---- Check 4: Baseline profile exists ---------------------------------
     checks.append(_check_baseline_profile_exists(db_path, run_id))
-
-    # ---- Check 5: Alert IDs are deterministic ----------------------------
     checks.append(_check_alert_id_determinism(alerts_path, run_id))
+    checks.extend(_check_key_aggregates(db_path, run_id))
 
-    # ---- Check 6: Key aggregates match source ----------------------------
-    agg_checks = _check_key_aggregates(db_path, run_id)
-    checks.extend(agg_checks)
-
-    # Compile summary
     report["checks"] = checks
     report["summary"]["total_checks"] = len(checks)
     report["summary"]["passed"] = sum(1 for c in checks if c["status"] == "PASS")
     report["summary"]["failed"] = sum(1 for c in checks if c["status"] == "FAIL")
     report["summary"]["warnings"] = sum(1 for c in checks if c["status"] == "WARN")
 
-    # Write report
     os.makedirs(os.path.dirname(os.path.abspath(report_path)), exist_ok=True)
     with open(report_path, "w", encoding="utf-8") as fh:
         json.dump(report, fh, indent=2, default=str)
@@ -126,15 +71,10 @@ def run_reconciliation(
         report_path,
     )
 
-    # Print summary to stdout
     _print_reconciliation_summary(report)
 
     return report
 
-
-# ---------------------------------------------------------------------------
-# Individual check functions
-# ---------------------------------------------------------------------------
 
 def _check_row_count(
     input_count: int, valid_count: int, rejected_count: int
@@ -252,7 +192,6 @@ def _check_baseline_profile_exists(db_path: str, run_id: str) -> Dict[str, Any]:
 
 
 def _check_alert_id_determinism(alerts_path: str, run_id: str) -> Dict[str, Any]:
-    """Verify that alert_ids are deterministic by recomputing them from (run_id, column, metric)."""
     try:
         if not os.path.exists(alerts_path):
             return {
@@ -301,11 +240,6 @@ def _check_alert_id_determinism(alerts_path: str, run_id: str) -> Dict[str, Any]
 
 
 def _check_key_aggregates(db_path: str, run_id: str) -> List[Dict[str, Any]]:
-    """
-    Verify that aggregate metrics in quarantine + valid together match the source.
-    We check counts by status and currency from the quarantine table (the rejected side).
-    This is a sanity check that no records were silently dropped.
-    """
     checks = []
 
     try:
@@ -344,7 +278,6 @@ def _check_key_aggregates(db_path: str, run_id: str) -> List[Dict[str, Any]]:
             except Exception as exc:
                 checks.append(_check_error("QUARANTINE_AGGREGATE_INTEGRITY", str(exc)))
 
-            # Check pipeline_runs uniqueness for this specific run_id
             try:
                 result = con.execute(
                     "SELECT COUNT(*) FROM pipeline_runs WHERE run_id = ?", [run_id]
@@ -373,10 +306,6 @@ def _check_key_aggregates(db_path: str, run_id: str) -> List[Dict[str, Any]]:
     return checks
 
 
-# ---------------------------------------------------------------------------
-# Utilities
-# ---------------------------------------------------------------------------
-
 def _check_error(check_id: str, message: str) -> Dict[str, Any]:
     return {
         "check_id": check_id,
@@ -400,17 +329,13 @@ def _print_reconciliation_summary(report: Dict[str, Any]) -> None:
     print("")
 
 
-# ---------------------------------------------------------------------------
-# CLI standalone invocation
-# ---------------------------------------------------------------------------
-
 if __name__ == "__main__":
     import argparse
     import sys
     import yaml
 
     parser = argparse.ArgumentParser(description="Run reconciliation checks standalone")
-    parser.add_argument("--db", required=True, help="Path to DuckDB file")
+    parser.add_argument("--db", required=True)
     parser.add_argument("--run-id", required=True, dest="run_id")
     parser.add_argument("--input-count", type=int, default=0, dest="input_count")
     parser.add_argument("--valid-count", type=int, default=0, dest="valid_count")
@@ -432,5 +357,4 @@ if __name__ == "__main__":
         log_level=args.log_level,
     )
 
-    failed = report["summary"]["failed"]
-    sys.exit(1 if failed > 0 else 0)
+    sys.exit(1 if report["summary"]["failed"] > 0 else 0)
