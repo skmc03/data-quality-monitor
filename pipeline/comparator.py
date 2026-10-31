@@ -1,17 +1,3 @@
-"""
-Comparator module — compare a new batch profile vs a baseline profile.
-
-Metrics computed
-----------------
-- Null rate delta per column          (WARN if > threshold)
-- Volume change %                     (WARN/CRITICAL)
-- Distribution drift: PSI for numeric (WARN if > 0.2, CRITICAL if > 0.25)
-- Freshness lag (hours)               (WARN/CRITICAL)
-- New/missing categories in categorical columns
-
-Returns a list of DriftResult dataclass instances.
-"""
-
 from __future__ import annotations
 
 import json
@@ -27,19 +13,15 @@ from pipeline.logger import get_logger
 from pipeline.profiler import load_profile
 
 
-# ---------------------------------------------------------------------------
-# Data types
-# ---------------------------------------------------------------------------
-
 @dataclass
 class DriftResult:
     column: str
-    metric: str          # null_rate | volume | distribution_psi | freshness | new_category | missing_category
+    metric: str
     baseline_value: Any
     current_value: Any
     delta: float
-    severity: str        # INFO | WARN | CRITICAL
-    description: str     # human-readable detail
+    severity: str
+    description: str
     threshold: float = 0.0
 
     def to_dict(self) -> dict:
@@ -55,34 +37,20 @@ class DriftResult:
         }
 
 
-# ---------------------------------------------------------------------------
-# PSI implementation
-# ---------------------------------------------------------------------------
-
 def _compute_psi(
     baseline_vals: np.ndarray,
     current_vals: np.ndarray,
     n_bins: int = 10,
 ) -> float:
-    """
-    Population Stability Index (PSI).
-
-    PSI = sum((actual% - expected%) * ln(actual% / expected%))
-
-    PSI < 0.1  : No significant change
-    0.1–0.2    : Moderate change — monitor
-    > 0.2      : Significant shift — action needed
-    """
-    # Build bins from baseline
+    # Bins derived from baseline only; same edges applied to current batch
+    # so PSI is comparable across runs. -inf/+inf capture out-of-range values.
     _, bin_edges = np.histogram(baseline_vals, bins=n_bins)
-    # Extend edges to capture all values
     bin_edges[0] = -np.inf
     bin_edges[-1] = np.inf
 
     baseline_counts, _ = np.histogram(baseline_vals, bins=bin_edges)
     current_counts, _ = np.histogram(current_vals, bins=bin_edges)
 
-    # Convert to proportions, avoid division by zero
     eps = 1e-6
     baseline_pct = baseline_counts / (baseline_counts.sum() + eps)
     current_pct = current_counts / (current_counts.sum() + eps)
@@ -92,10 +60,6 @@ def _compute_psi(
     psi_values = (current_pct - baseline_pct) * np.log(current_pct / baseline_pct)
     return float(np.sum(psi_values))
 
-
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
 
 def compare(
     baseline_profile: Dict[str, Any],
@@ -110,22 +74,6 @@ def compare(
     freshness_max_lag_hours: float = 48.0,
     log_level: str = "INFO",
 ) -> List[DriftResult]:
-    """
-    Compare batch profile against baseline profile and return drift results.
-
-    Parameters
-    ----------
-    baseline_profile:  Profile dict for the baseline run.
-    batch_profile:     Profile dict for the current batch run.
-    batch_df:          Raw batch DataFrame (needed for PSI histogram computation).
-    baseline_df:       Raw baseline DataFrame (needed for PSI histogram computation).
-    run_id:            Current batch run_id.
-    *threshold params* as per config.yaml.
-
-    Returns
-    -------
-    List of DriftResult instances (may be empty if no drift detected).
-    """
     logger = get_logger(__name__, run_id=run_id, level=log_level)
     results: List[DriftResult] = []
 
@@ -133,7 +81,6 @@ def compare(
         logger.warning("Baseline profile is empty — cannot compare.")
         return results
 
-    # ---- 1. Volume --------------------------------------------------------
     baseline_volume = baseline_profile.get("_volume", {}).get("row_count", 0)
     batch_volume = batch_profile.get("_volume", {}).get("row_count", 0)
 
@@ -159,7 +106,6 @@ def compare(
                 )
             )
 
-    # ---- 2. Null rate delta per column ------------------------------------
     all_cols = set(baseline_profile.keys()) | set(batch_profile.keys())
     all_cols.discard("_volume")
 
@@ -189,7 +135,6 @@ def compare(
                 )
             )
 
-    # ---- 3. Distribution PSI for numeric columns -------------------------
     numeric_cols_in_baseline = [
         col for col, p in baseline_profile.items()
         if p.get("profile_type") == "numeric" and col != "_volume"
@@ -244,7 +189,6 @@ def compare(
                 )
             )
 
-    # ---- 4. Freshness lag -------------------------------------------------
     batch_freshness = batch_profile.get("transaction_date", {})
     if batch_freshness.get("profile_type") == "freshness":
         freshness_max_str = batch_freshness.get("freshness_max")
@@ -275,7 +219,6 @@ def compare(
             except Exception as e:
                 logger.warning("Could not compute freshness lag: %s", e)
 
-    # ---- 5. New / missing categories in categorical columns ---------------
     cat_cols_in_baseline = [
         col for col, p in baseline_profile.items()
         if p.get("profile_type") == "categorical" and col != "_volume"

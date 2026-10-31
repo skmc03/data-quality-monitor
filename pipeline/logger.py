@@ -1,13 +1,3 @@
-"""
-Structured logger that injects run_id into every log line.
-
-Tracks:
-  run_id, start_time, end_time, input_count, output_count,
-  rejected_count, failure_reason
-
-Writes run metadata to DuckDB table: pipeline_runs
-"""
-
 from __future__ import annotations
 
 import logging
@@ -17,10 +7,6 @@ from typing import Optional
 
 import duckdb
 
-
-# ---------------------------------------------------------------------------
-# Custom log filter that injects run_id into every LogRecord
-# ---------------------------------------------------------------------------
 
 class RunIdFilter(logging.Filter):
     def __init__(self, run_id: str = "UNKNOWN"):
@@ -32,23 +18,9 @@ class RunIdFilter(logging.Filter):
         return True
 
 
-# ---------------------------------------------------------------------------
-# Public factory
-# ---------------------------------------------------------------------------
-
 def get_logger(name: str, run_id: str = "UNKNOWN", level: str = "INFO") -> logging.Logger:
-    """
-    Return a logger that stamps every line with run_id.
-
-    Parameters
-    ----------
-    name:    logger name (typically __name__)
-    run_id:  pipeline run identifier
-    level:   logging level string
-    """
     logger = logging.getLogger(f"{name}.{run_id}")
     if logger.handlers:
-        # Already configured for this run; update filter
         for f in logger.filters:
             if isinstance(f, RunIdFilter):
                 f.run_id = run_id
@@ -72,10 +44,6 @@ def get_logger(name: str, run_id: str = "UNKNOWN", level: str = "INFO") -> loggi
     return logger
 
 
-# ---------------------------------------------------------------------------
-# Run metadata tracker
-# ---------------------------------------------------------------------------
-
 _DDL_PIPELINE_RUNS = """
 CREATE TABLE IF NOT EXISTS pipeline_runs (
     run_id           VARCHAR NOT NULL,
@@ -93,28 +61,11 @@ CREATE TABLE IF NOT EXISTS pipeline_runs (
 
 
 class RunTracker:
-    """
-    Records pipeline run lifecycle in DuckDB table `pipeline_runs`.
-
-    Usage
-    -----
-    tracker = RunTracker(db_path, run_id)
-    tracker.start(source_file="data/sample_batch.csv", input_count=1000)
-    ...
-    tracker.complete(output_count=980, rejected_count=20)
-    # or
-    tracker.fail(reason="Baseline not found")
-    """
-
     def __init__(self, db_path: str, run_id: str):
         self.db_path = db_path
         self.run_id = run_id
         self._start_ts: Optional[datetime] = None
         self._ensure_table()
-
-    # ------------------------------------------------------------------
-    # Internal helpers
-    # ------------------------------------------------------------------
 
     def _connect(self) -> duckdb.DuckDBPyConnection:
         return duckdb.connect(self.db_path)
@@ -123,16 +74,11 @@ class RunTracker:
         with self._connect() as con:
             con.execute(_DDL_PIPELINE_RUNS)
 
-    # ------------------------------------------------------------------
-    # Lifecycle methods
-    # ------------------------------------------------------------------
-
     def start(
         self,
         source_file: str = "",
         input_count: Optional[int] = None,
     ) -> None:
-        """Register the start of a run."""
         self._start_ts = datetime.now(timezone.utc)
         with self._connect() as con:
             con.execute(
@@ -154,7 +100,6 @@ class RunTracker:
         output_count: Optional[int] = None,
         rejected_count: Optional[int] = None,
     ) -> None:
-        """Mark run as COMPLETED."""
         end_ts = datetime.now(timezone.utc)
         with self._connect() as con:
             con.execute(
@@ -170,7 +115,6 @@ class RunTracker:
             )
 
     def fail(self, reason: str) -> None:
-        """Mark run as FAILED with reason."""
         end_ts = datetime.now(timezone.utc)
         with self._connect() as con:
             con.execute(
@@ -185,7 +129,6 @@ class RunTracker:
             )
 
     def get_run_info(self) -> Optional[dict]:
-        """Return run metadata dict or None if run not found."""
         with self._connect() as con:
             rows = con.execute(
                 "SELECT * FROM pipeline_runs WHERE run_id = ?", [self.run_id]
@@ -195,7 +138,6 @@ class RunTracker:
         return rows.iloc[0].to_dict()
 
     def elapsed_seconds(self) -> float:
-        """Seconds since start() was called."""
         if self._start_ts is None:
             return 0.0
         return (datetime.now(timezone.utc) - self._start_ts).total_seconds()

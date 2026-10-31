@@ -1,12 +1,3 @@
-"""
-Quarantine module — persist rejected records to DuckDB + CSV.
-
-Every rejected record carries:
-    rejection_reason, run_id, source_file, quarantine_timestamp
-
-Idempotency guarantee: re-running the same run_id will not insert duplicate rows.
-"""
-
 from __future__ import annotations
 
 import os
@@ -18,10 +9,6 @@ import pandas as pd
 
 from pipeline.logger import get_logger
 
-
-# ---------------------------------------------------------------------------
-# DDL
-# ---------------------------------------------------------------------------
 
 _DDL_QUARANTINE = """
 CREATE TABLE IF NOT EXISTS quarantine (
@@ -60,10 +47,6 @@ _QUARANTINE_COLS = [
 ]
 
 
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
-
 def quarantine_records(
     rejected_df: pd.DataFrame,
     db_path: str,
@@ -72,32 +55,14 @@ def quarantine_records(
     quarantine_csv_path: Optional[str] = None,
     log_level: str = "INFO",
 ) -> int:
-    """
-    Write rejected records to DuckDB quarantine table and (optionally) a CSV.
-
-    Parameters
-    ----------
-    rejected_df:          DataFrame of rejected rows (must include rejection_reason).
-    db_path:              Path to DuckDB file.
-    run_id:               Pipeline run identifier.
-    quarantine_csv_path:  Optional path to append quarantine CSV.
-    log_level:            Logging level.
-
-    Returns
-    -------
-    Number of records written to quarantine.
-    """
     logger = get_logger(__name__, run_id=run_id, level=log_level)
 
     if rejected_df is None or rejected_df.empty:
         logger.info("No rejected records to quarantine.")
         return 0
 
-    # Ensure table exists
     with duckdb.connect(db_path) as con:
         con.execute(_DDL_QUARANTINE)
-
-        # Idempotency: remove any existing quarantine rows for this run_id
         existing = con.execute(
             "SELECT COUNT(*) FROM quarantine WHERE run_id = ?", [run_id]
         ).fetchone()[0]
@@ -109,11 +74,9 @@ def quarantine_records(
             )
             con.execute("DELETE FROM quarantine WHERE run_id = ?", [run_id])
 
-    # Build insert DataFrame
     ts_now = datetime.now(timezone.utc)
     insert_df = _build_quarantine_df(rejected_df, run_id, ts_now)
 
-    # Insert
     with duckdb.connect(db_path) as con:
         con.execute(_DDL_QUARANTINE)
         con.register("_quarantine_insert", insert_df)
@@ -123,7 +86,6 @@ def quarantine_records(
 
     logger.info("Quarantined %d records for run_id=%s", len(insert_df), run_id)
 
-    # Write CSV (append mode; header only if file does not exist yet)
     if quarantine_csv_path:
         _write_quarantine_csv(insert_df, quarantine_csv_path, logger)
 
@@ -131,18 +93,6 @@ def quarantine_records(
 
 
 def get_quarantine_records(db_path: str, run_id: Optional[str] = None) -> pd.DataFrame:
-    """
-    Retrieve quarantine records from DuckDB.
-
-    Parameters
-    ----------
-    db_path:  Path to DuckDB file.
-    run_id:   If provided, filter to this run; otherwise return all.
-
-    Returns
-    -------
-    pd.DataFrame of quarantine records.
-    """
     with duckdb.connect(db_path) as con:
         try:
             con.execute(_DDL_QUARANTINE)
@@ -155,17 +105,11 @@ def get_quarantine_records(db_path: str, run_id: Optional[str] = None) -> pd.Dat
             return pd.DataFrame(columns=_QUARANTINE_COLS)
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
 def _build_quarantine_df(
     rejected_df: pd.DataFrame, run_id: str, ts: datetime
 ) -> pd.DataFrame:
-    """Build a DataFrame aligned with the quarantine table schema."""
     df = rejected_df.copy()
 
-    # Ensure all expected source columns exist (fill missing with None)
     source_cols = [
         "transaction_id",
         "customer_id",
@@ -190,11 +134,9 @@ def _build_quarantine_df(
 
     df["quarantine_timestamp"] = ts
 
-    # Coerce amount to float (may be object)
     if "amount" in df.columns:
         df["amount"] = pd.to_numeric(df["amount"], errors="coerce")
 
-    # Coerce is_flagged to nullable bool
     if "is_flagged" in df.columns:
         df["is_flagged"] = df["is_flagged"].map(
             lambda x: None if pd.isna(x) else bool(x)
@@ -206,7 +148,6 @@ def _build_quarantine_df(
 def _write_quarantine_csv(
     df: pd.DataFrame, path: str, logger
 ) -> None:
-    """Append quarantine records to CSV file."""
     os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
     write_header = not os.path.exists(path) or os.path.getsize(path) == 0
     df.to_csv(path, mode="a", header=write_header, index=False)

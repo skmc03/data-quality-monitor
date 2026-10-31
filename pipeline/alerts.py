@@ -1,22 +1,3 @@
-"""
-Alerts module — convert DriftResults into explainable, structured alert reports.
-
-Each alert has:
-    alert_id           : deterministic SHA-256 hash of (run_id, column, metric)
-    run_id             : pipeline run
-    column             : affected column
-    metric             : null_rate | volume | distribution_psi | freshness | new_category | missing_category
-    severity           : INFO | WARN | CRITICAL
-    baseline_value     : value in baseline profile
-    current_value      : value in current batch profile
-    delta              : numeric change magnitude
-    explanation        : human-readable explanation (>= 1 sentence)
-    threshold          : configured threshold that was crossed
-    triggered_at       : ISO-8601 UTC timestamp
-
-Written to outputs/alerts.json.
-"""
-
 from __future__ import annotations
 
 import hashlib
@@ -29,10 +10,6 @@ from pipeline.comparator import DriftResult
 from pipeline.logger import get_logger
 
 
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
-
 def generate_alerts(
     drift_results: List[DriftResult],
     run_id: str,
@@ -42,22 +19,6 @@ def generate_alerts(
     min_severity: str = "INFO",
     baseline_run_id: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
-    """
-    Convert DriftResult objects into structured alert dictionaries and write
-    them to a JSON file.
-
-    Parameters
-    ----------
-    drift_results:  List of DriftResult instances from the comparator.
-    run_id:         Pipeline run identifier.
-    output_path:    Where to write alerts.json.
-    log_level:      Logging level.
-    min_severity:   Minimum severity to include ('INFO', 'WARN', 'CRITICAL').
-
-    Returns
-    -------
-    List of alert dicts (all severities included in return; file may filter).
-    """
     logger = get_logger(__name__, run_id=run_id, level=log_level)
     severity_rank = {"INFO": 0, "WARN": 1, "CRITICAL": 2}
     min_rank = severity_rank.get(min_severity.upper(), 0)
@@ -85,11 +46,7 @@ def generate_alerts(
         }
         alerts.append(alert)
 
-    # Filter by min severity for file output
-    filtered = [a for a in alerts if severity_rank.get(a["severity"], 0) >= min_rank]
-
-    # Write to JSON
-    _write_alerts_json(alerts, output_path, logger)  # Write all; consumer can filter
+    _write_alerts_json(alerts, output_path, logger)
 
     logger.info(
         "Generated %d alerts (%d CRITICAL, %d WARN, %d INFO) for run_id=%s",
@@ -104,24 +61,13 @@ def generate_alerts(
 
 
 def load_alerts(output_path: str) -> List[Dict[str, Any]]:
-    """Load previously written alerts from JSON file."""
     if not os.path.exists(output_path):
         return []
     with open(output_path, "r", encoding="utf-8") as fh:
         return json.load(fh)
 
 
-# ---------------------------------------------------------------------------
-# Explanation builder
-# ---------------------------------------------------------------------------
-
 def _build_explanation(dr: DriftResult) -> str:
-    """
-    Generate a human-readable explanation for a drift result.
-
-    The explanation goes beyond just repeating numbers — it describes
-    the business impact and what the analyst should investigate.
-    """
     metric = dr.metric
     col = dr.column
     sev = dr.severity
@@ -232,18 +178,12 @@ def _build_explanation(dr: DriftResult) -> str:
     return explanation
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
 def _deterministic_alert_id(run_id: str, column: str, metric: str) -> str:
-    """SHA-256 hash of (run_id, column, metric) encoded as hex string."""
     key = f"{run_id}::{column}::{metric}"
     return hashlib.sha256(key.encode("utf-8")).hexdigest()
 
 
 def _safe_serialize(value: Any) -> Any:
-    """Convert numpy/pandas types to native Python for JSON serialisation."""
     if value is None:
         return None
     try:
@@ -260,7 +200,6 @@ def _safe_serialize(value: Any) -> Any:
 
 
 def _write_alerts_json(alerts: List[Dict[str, Any]], output_path: str, logger) -> None:
-    """Write alert list to JSON file, creating parent directories if needed."""
     os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as fh:
         json.dump(alerts, fh, indent=2, default=str)

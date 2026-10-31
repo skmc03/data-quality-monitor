@@ -1,25 +1,3 @@
-"""
-Profiler module — compute statistical profiles for a validated DataFrame.
-
-For each numeric column:
-    min, max, mean, median, std, p5, p25, p75, p95
-
-For each categorical column:
-    value_counts (as proportions), top_n values
-
-For each column:
-    null_rate
-
-Volume:
-    total row count
-
-Freshness:
-    min/max/latest transaction_date
-
-Profile is stored in DuckDB table `column_profiles` keyed by (run_id, column_name).
-Idempotency: if run_id already has profiles stored, skip recomputation.
-"""
-
 from __future__ import annotations
 
 import json
@@ -34,15 +12,11 @@ import pandas as pd
 from pipeline.logger import get_logger
 
 
-# ---------------------------------------------------------------------------
-# DDL
-# ---------------------------------------------------------------------------
-
 _DDL_COLUMN_PROFILES = """
 CREATE TABLE IF NOT EXISTS column_profiles (
     run_id          VARCHAR NOT NULL,
     column_name     VARCHAR NOT NULL,
-    profile_type    VARCHAR NOT NULL,   -- 'numeric', 'categorical', 'volume', 'freshness'
+    profile_type    VARCHAR NOT NULL,
     null_rate       DOUBLE,
     row_count       BIGINT,
     stat_min        DOUBLE,
@@ -54,7 +28,7 @@ CREATE TABLE IF NOT EXISTS column_profiles (
     stat_p25        DOUBLE,
     stat_p75        DOUBLE,
     stat_p95        DOUBLE,
-    value_counts_json VARCHAR,          -- JSON for categorical distributions
+    value_counts_json VARCHAR,
     freshness_min   TIMESTAMP,
     freshness_max   TIMESTAMP,
     profiled_at     TIMESTAMP NOT NULL,
@@ -70,7 +44,6 @@ _TIMESTAMP_COLUMNS = ["transaction_date"]
 
 
 def _derive_columns_from_schema(schema_path: Optional[str]) -> tuple[list[str], list[str]]:
-    """Derive numeric and categorical column lists from schema.json if available."""
     if not schema_path or not os.path.exists(schema_path):
         return _DEFAULT_NUMERIC_COLUMNS, _DEFAULT_CATEGORICAL_COLUMNS
 
@@ -94,10 +67,6 @@ def _derive_columns_from_schema(schema_path: Optional[str]) -> tuple[list[str], 
     )
 
 
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
-
 def profile(
     df: pd.DataFrame,
     run_id: str,
@@ -107,26 +76,10 @@ def profile(
     log_level: str = "INFO",
     force: bool = False,
 ) -> Dict[str, Any]:
-    """
-    Profile a DataFrame and persist results to DuckDB.
-
-    Parameters
-    ----------
-    df:         Validated DataFrame to profile.
-    run_id:     Pipeline run identifier.
-    db_path:    Path to DuckDB file.
-    log_level:  Logging level.
-    force:      If True, overwrite existing profile for this run_id.
-
-    Returns
-    -------
-    dict mapping column_name -> profile dict.
-    """
     logger = get_logger(__name__, run_id=run_id, level=log_level)
 
     _ensure_table(db_path)
 
-    # Idempotency check
     if not force and _profile_exists(db_path, run_id):
         logger.info("Profile already exists for run_id=%s — loading from DB", run_id)
         return load_profile(db_path, run_id)
@@ -150,7 +103,6 @@ def profile(
 
 
 def load_profile(db_path: str, run_id: str) -> Dict[str, Any]:
-    """Load a previously stored profile from DuckDB."""
     with duckdb.connect(db_path) as con:
         rows = con.execute(
             "SELECT * FROM column_profiles WHERE run_id = ?", [run_id]
@@ -195,14 +147,6 @@ def load_profile(db_path: str, run_id: str) -> Dict[str, Any]:
 
 
 def get_latest_baseline_run_id(db_path: str, exclude_run_id: Optional[str] = None) -> Optional[str]:
-    """
-    Return the run_id of the most recently profiled baseline run.
-
-    Parameters
-    ----------
-    db_path:          Path to DuckDB.
-    exclude_run_id:   run_id to exclude (e.g. the current batch run).
-    """
     with duckdb.connect(db_path) as con:
         try:
             if exclude_run_id:
@@ -228,10 +172,6 @@ def get_latest_baseline_run_id(db_path: str, exclude_run_id: Optional[str] = Non
     return row[0] if row else None
 
 
-# ---------------------------------------------------------------------------
-# Internal computation
-# ---------------------------------------------------------------------------
-
 def _compute_profile(
     df: pd.DataFrame,
     run_id: str,
@@ -242,14 +182,12 @@ def _compute_profile(
     profile_data: Dict[str, Any] = {}
     total_rows = len(df)
 
-    # Volume
     profile_data["_volume"] = {
         "profile_type": "volume",
         "null_rate": 0.0,
         "row_count": total_rows,
     }
 
-    # Numeric columns
     for col in numeric_cols:
         if col not in df.columns:
             continue
@@ -282,11 +220,9 @@ def _compute_profile(
                 "p95": float(np.percentile(non_null, 95)),
             }
 
-    # Categorical columns
     for col in categorical_cols:
         if col not in df.columns:
             continue
-        series = df[col].astype(str).where(df[col].notna(), other=None)
         null_rate = float(df[col].isna().sum()) / total_rows if total_rows > 0 else 0.0
         non_null = df[col].dropna()
 
@@ -303,7 +239,6 @@ def _compute_profile(
             "value_counts": vc,
         }
 
-    # Freshness
     if "transaction_date" in df.columns:
         ts_series = pd.to_datetime(df["transaction_date"], errors="coerce", utc=True)
         null_rate = float(ts_series.isna().sum()) / total_rows if total_rows > 0 else 0.0
@@ -334,10 +269,6 @@ def _minimal_profile(run_id: str) -> Dict[str, Any]:
         }
     }
 
-
-# ---------------------------------------------------------------------------
-# Persistence helpers
-# ---------------------------------------------------------------------------
 
 def _ensure_table(db_path: str) -> None:
     with duckdb.connect(db_path) as con:
@@ -384,13 +315,11 @@ def _persist_profile(profile_data: Dict[str, Any], db_path: str, run_id: str, lo
 
     insert_df = pd.DataFrame(rows)
 
-    # Convert freshness columns to timestamps
     for col in ("freshness_min", "freshness_max"):
         insert_df[col] = pd.to_datetime(insert_df[col], errors="coerce", utc=True)
 
     with duckdb.connect(db_path) as con:
         con.execute(_DDL_COLUMN_PROFILES)
-        # Delete existing rows for this run_id (idempotent)
         con.execute("DELETE FROM column_profiles WHERE run_id = ?", [run_id])
         con.register("_profile_insert", insert_df)
         con.execute(
