@@ -42,9 +42,8 @@ class TestRunIdAttached:
         assert (df["run_id"] == RUN_ID).all(), "Some rows are missing run_id"
 
     def test_run_id_is_string(self, baseline_csv: str) -> None:
-        """run_id column dtype is object (string)."""
         df = load_csv(baseline_csv, run_id=RUN_ID)
-        assert df["run_id"].dtype == object
+        assert df["run_id"].dtype == object or pd.api.types.is_string_dtype(df["run_id"])
 
 
 class TestSourceFileAttached:
