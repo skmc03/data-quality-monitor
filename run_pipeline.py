@@ -1,32 +1,3 @@
-"""
-run_pipeline.py — Main CLI entrypoint for the Data Quality Monitor.
-
-Usage
------
-python run_pipeline.py \\
-    --baseline data/sample_baseline.csv \\
-    --batch    data/sample_batch.csv \\
-    --run-id   RUN_001
-
-Options
--------
---baseline     Path to baseline CSV (required on first run)
---batch        Path to new batch CSV (required)
---run-id       Unique identifier for this run  [default: auto-generated]
---config       Path to config.yaml             [default: config.yaml]
---db           Override DuckDB path
---force        Re-run even if run_id already completed
---baseline-run-id  Explicitly name the baseline run_id to compare against
---log-level    INFO | DEBUG | WARNING           [default: INFO]
---skip-reconcile   Skip reconciliation step
-
-Exit codes
-----------
-0 — Pipeline completed successfully
-1 — Pipeline failed (exception or critical error)
-2 — Pipeline skipped (idempotency; already completed)
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -39,9 +10,6 @@ from typing import Any, Dict, Optional
 
 import yaml
 
-# ---------------------------------------------------------------------------
-# Pipeline imports
-# ---------------------------------------------------------------------------
 from pipeline.alerts import generate_alerts
 from pipeline.comparator import compare
 from pipeline.idempotency import guard_idempotent
@@ -57,10 +25,6 @@ from pipeline.validate import validate
 from reconciliation.reconcile import run_reconciliation
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
 def _load_config(config_path: str) -> Dict[str, Any]:
     if not os.path.exists(config_path):
         return {}
@@ -69,9 +33,7 @@ def _load_config(config_path: str) -> Dict[str, Any]:
 
 
 def _init_db(db_path: str) -> None:
-    """Ensure DuckDB file and parent directory exist."""
     os.makedirs(os.path.dirname(os.path.abspath(db_path)), exist_ok=True)
-    # DuckDB creates the file on first connect; nothing more needed here.
 
 
 def _print_summary(
@@ -118,10 +80,6 @@ def _print_summary(
     print(divider + "\n")
 
 
-# ---------------------------------------------------------------------------
-# Main pipeline
-# ---------------------------------------------------------------------------
-
 def run_pipeline(
     baseline_path: str,
     batch_path: str,
@@ -133,11 +91,6 @@ def run_pipeline(
     log_level: str = "INFO",
     skip_reconcile: bool = False,
 ) -> int:
-    """
-    Execute the full data quality pipeline.
-
-    Returns exit code (0=success, 1=failure, 2=skipped).
-    """
     db_path = config.get("database", {}).get("path", "db/pipeline.duckdb")
     schema_path = config.get("data", {}).get("schema_path", "data/schema.json")
     thresholds = config.get("thresholds", {})
@@ -148,44 +101,35 @@ def run_pipeline(
 
     logger = get_logger("run_pipeline", run_id=run_id, level=log_level)
 
-    # ---- Step 0: Initialise DB -------------------------------------------
     _init_db(db_path)
     logger.info("Database initialised at %s", db_path)
 
-    # ---- Step 1: Idempotency guard ---------------------------------------
     should_proceed = guard_idempotent(db_path, run_id, force=force, log_level=log_level)
     if not should_proceed:
         print(f"[SKIP] run_id={run_id} already COMPLETED. Use --force to reprocess.")
         return 2
 
-    # ---- Step 2: Register run start --------------------------------------
     tracker = RunTracker(db_path, run_id)
     tracker.start(source_file=os.path.basename(batch_path))
 
     try:
-        # ---- Step 3: Ingest baseline ------------------------------------
         logger.info("Ingesting baseline: %s", baseline_path)
         baseline_df_raw = load_csv(baseline_path, run_id=f"{run_id}_BASELINE", log_level=log_level)
         logger.info("Baseline raw rows: %d", len(baseline_df_raw))
 
-        # ---- Step 4: Ingest batch ----------------------------------------
         logger.info("Ingesting batch: %s", batch_path)
         batch_df_raw = load_csv(batch_path, run_id=run_id, log_level=log_level)
         input_count = len(batch_df_raw)
         logger.info("Batch raw rows: %d", input_count)
         tracker.start(source_file=os.path.basename(batch_path), input_count=input_count)
 
-        # ---- Step 5: Validate baseline -----------------------------------
         logger.info("Validating baseline data...")
         baseline_valid, baseline_rejected = validate(
             baseline_df_raw, run_id=f"{run_id}_BASELINE",
             schema_path=schema_path, log_level=log_level
         )
-        logger.info(
-            "Baseline: %d valid, %d rejected", len(baseline_valid), len(baseline_rejected)
-        )
+        logger.info("Baseline: %d valid, %d rejected", len(baseline_valid), len(baseline_rejected))
 
-        # Quarantine baseline rejects (separate run_id suffix)
         if not baseline_rejected.empty:
             quarantine_records(
                 baseline_rejected, db_path,
@@ -194,17 +138,13 @@ def run_pipeline(
                 log_level=log_level,
             )
 
-        # ---- Step 6: Validate batch --------------------------------------
         logger.info("Validating batch data...")
         batch_valid, batch_rejected = validate(
             batch_df_raw, run_id=run_id,
             schema_path=schema_path, log_level=log_level
         )
-        logger.info(
-            "Batch: %d valid, %d rejected", len(batch_valid), len(batch_rejected)
-        )
+        logger.info("Batch: %d valid, %d rejected", len(batch_valid), len(batch_rejected))
 
-        # ---- Step 7: Quarantine batch rejects ----------------------------
         rejected_count = len(batch_rejected)
         if not batch_rejected.empty:
             quarantine_records(
@@ -214,7 +154,6 @@ def run_pipeline(
                 log_level=log_level,
             )
 
-        # ---- Step 8: Profile baseline ------------------------------------
         logger.info("Profiling baseline...")
         baseline_profile = profile(
             baseline_valid,
@@ -223,7 +162,6 @@ def run_pipeline(
             log_level=log_level,
         )
 
-        # ---- Step 9: Profile batch ---------------------------------------
         logger.info("Profiling batch...")
         batch_profile = profile(
             batch_valid,
@@ -232,7 +170,6 @@ def run_pipeline(
             log_level=log_level,
         )
 
-        # ---- Step 10: Compare batch vs baseline -------------------------
         logger.info("Comparing batch profile vs baseline...")
         drift_results = compare(
             baseline_profile=baseline_profile,
@@ -247,7 +184,6 @@ def run_pipeline(
             log_level=log_level,
         )
 
-        # ---- Step 11: Generate alerts ------------------------------------
         logger.info("Generating alerts...")
         alerts = generate_alerts(
             drift_results,
@@ -257,7 +193,6 @@ def run_pipeline(
             baseline_run_id=f"{run_id}_BASELINE",
         )
 
-        # ---- Step 12: Reconciliation ------------------------------------
         if not skip_reconcile:
             logger.info("Running reconciliation checks...")
             _run_reconciliation(
@@ -270,11 +205,9 @@ def run_pipeline(
                 log_level=log_level,
             )
 
-        # ---- Step 13: Mark run complete ----------------------------------
         valid_count = len(batch_valid)
         tracker.complete(output_count=valid_count, rejected_count=rejected_count)
 
-        # ---- Print summary -----------------------------------------------
         _print_summary(
             run_id=run_id,
             input_count=input_count,
@@ -304,7 +237,6 @@ def _run_reconciliation(
     config: Dict[str, Any],
     log_level: str,
 ) -> None:
-    """Invoke the reconciliation module."""
     try:
         run_reconciliation(
             db_path=db_path,
@@ -320,79 +252,36 @@ def _run_reconciliation(
         logger.warning("Reconciliation step raised an error: %s", exc)
 
 
-# ---------------------------------------------------------------------------
-# CLI
-# ---------------------------------------------------------------------------
-
 def _parse_args(argv=None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Data Quality Monitor — pipeline entrypoint",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument(
-        "--baseline",
-        default=None,
-        help="Path to baseline CSV (uses config.yaml default if omitted)",
-    )
-    parser.add_argument(
-        "--batch",
-        default=None,
-        help="Path to batch CSV (uses config.yaml default if omitted)",
-    )
-    parser.add_argument(
-        "--run-id",
-        default=None,
-        dest="run_id",
-        help="Unique run identifier (auto-generated if omitted)",
-    )
-    parser.add_argument(
-        "--config",
-        default="config.yaml",
-        help="Path to config.yaml [default: config.yaml]",
-    )
-    parser.add_argument(
-        "--db",
-        default=None,
-        help="Override DuckDB path from config",
-    )
-    parser.add_argument(
-        "--force",
-        action="store_true",
-        help="Reprocess even if run_id already completed",
-    )
-    parser.add_argument(
-        "--baseline-run-id",
-        default=None,
-        dest="baseline_run_id",
-        help="Explicitly specify which run_id to use as baseline for comparison",
-    )
+    parser.add_argument("--baseline", default=None)
+    parser.add_argument("--batch", default=None)
+    parser.add_argument("--run-id", default=None, dest="run_id")
+    parser.add_argument("--config", default="config.yaml")
+    parser.add_argument("--db", default=None)
+    parser.add_argument("--force", action="store_true")
+    parser.add_argument("--baseline-run-id", default=None, dest="baseline_run_id")
     parser.add_argument(
         "--log-level",
         default="INFO",
         dest="log_level",
         choices=["DEBUG", "INFO", "WARNING", "ERROR"],
-        help="Logging verbosity [default: INFO]",
     )
-    parser.add_argument(
-        "--skip-reconcile",
-        action="store_true",
-        dest="skip_reconcile",
-        help="Skip reconciliation step",
-    )
+    parser.add_argument("--skip-reconcile", action="store_true", dest="skip_reconcile")
     return parser.parse_args(argv)
 
 
 def main(argv=None) -> int:
     args = _parse_args(argv)
 
-    # Load config
     config = _load_config(args.config)
 
-    # Override db path if provided
     if args.db:
         config.setdefault("database", {})["path"] = args.db
 
-    # Resolve baseline and batch paths
     baseline_path = args.baseline or config.get("data", {}).get(
         "baseline_path", "data/sample_baseline.csv"
     )
@@ -400,7 +289,6 @@ def main(argv=None) -> int:
         "batch_path", "data/sample_batch.csv"
     )
 
-    # Generate run_id if not provided
     run_id = args.run_id or f"RUN_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6].upper()}"
 
     print(f"[START] Data Quality Monitor | run_id={run_id}")

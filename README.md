@@ -287,18 +287,6 @@ Or it runs automatically as the last step of `run_pipeline.py`.
 
 ---
 
-## Next Steps
-
-- Add a Streamlit or FastAPI dashboard to visualise drift over time
-- Plug in Great Expectations for richer schema validation
-- Add email/Slack alert dispatcher wrapping `alerts.json`
-- Implement partition-aware profiling (profile per date bucket)
-- Add statistical tests (KS-test, chi-squared) alongside PSI
-- Migrate DuckDB state to a shared store (e.g., S3 + Athena) for team-wide monitoring
-- Add column-level lineage tracking (source field -> downstream metric)
-
----
-
 ## Data Dictionary Reference
 
 See `data_dictionary.md` for full schema documentation of all source and DuckDB target tables.
