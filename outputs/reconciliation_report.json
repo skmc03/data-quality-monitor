@@ -1,6 +1,6 @@
 {
-  "run_id": "REVIEW_20261030_01",
-  "generated_at": "2026-10-29T20:23:06Z",
+  "run_id": "CI_RUN_001",
+  "generated_at": "2026-10-31T04:55:20Z",
   "checks": [
     {
       "check_id": "ROW_COUNT_RECONCILIATION",
@@ -30,7 +30,7 @@
       "status": "PASS",
       "detail": {
         "records_missing_reason": 0,
-        "run_id": "REVIEW_20261030_01"
+        "run_id": "CI_RUN_001"
       },
       "message": "All quarantined records have rejection reasons."
     },
@@ -39,7 +39,7 @@
       "description": "Baseline column profile exists in DB before batch comparison",
       "status": "PASS",
       "detail": {
-        "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+        "baseline_run_id": "CI_RUN_001_BASELINE",
         "profile_rows_found": 9
       },
       "message": "Baseline profile found (9 rows)."
@@ -66,10 +66,10 @@
     },
     {
       "check_id": "PIPELINE_RUN_REGISTERED",
-      "description": "Exactly one pipeline_runs entry for run_id=REVIEW_20261030_01",
+      "description": "Exactly one pipeline_runs entry for run_id=CI_RUN_001",
       "status": "PASS",
       "detail": {
-        "run_id": "REVIEW_20261030_01",
+        "run_id": "CI_RUN_001",
         "entries_found": 1
       },
       "message": "Pipeline run registered correctly (count=1)."

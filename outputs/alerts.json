@@ -1,8 +1,8 @@
 [
   {
-    "alert_id": "6f9657222ce377564721f40313328dd2f88e3e231aa0983c61f15643d695d07b",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "94349b11697e1c28e3ef977c84968db45bca5ed8ace9008c1ad2ed31d5493289",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "is_flagged",
     "metric": "null_rate",
     "severity": "WARN",
@@ -11,12 +11,12 @@
     "delta": 0.1361,
     "explanation": "The null rate for column 'is_flagged' has risen by 13.61 percentage points (from 1.70% to 15.31%). This may indicate data quality degradation or a partial upstream issue. Review source system logs and upstream pipeline health.",
     "threshold": 0.05,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "877c28ae237dd40f3a632d91accb1fb1a0047c208775e0eb81d214b5d6858242",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "b42bc86fbf02efe438dac17485e06c0bd85e600942349c894a7db94511a2a039",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "amount",
     "metric": "distribution_psi",
     "severity": "CRITICAL",
@@ -25,26 +25,26 @@
     "delta": 4.3981,
     "explanation": "The distribution of 'amount' has shifted significantly. Population Stability Index (PSI) = 4.3981 (threshold=0.2). Baseline mean was 373.5, current mean is 9229.51. PSI above 0.25 indicates a major population shift. The data generating process may have fundamentally changed. Inspect for pricing changes, new customer segments, currency shifts, or data errors.",
     "threshold": 0.2,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "74ed1f63b4873aacc82633331d7baaa79b9da44d16158ceddb74cce864f0b9f5",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "f9f0a8a12948e4de919acd31149ed33f908cc4948c3c3cf2028324a9eb8621ca",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "transaction_date",
     "metric": "freshness",
     "severity": "CRITICAL",
     "baseline_value": "48h",
-    "current_value": 572.63,
-    "delta": 524.63,
-    "explanation": "The most recent transaction_date in this batch is 572.6 hours old, exceeding the freshness threshold of 48h. This strongly suggests a pipeline delay, source system outage, or missed ingestion job. Check the batch scheduler, source database connectivity, and any upstream SLA breaches.",
+    "current_value": 605.16,
+    "delta": 557.16,
+    "explanation": "The most recent transaction_date in this batch is 605.2 hours old, exceeding the freshness threshold of 48h. This strongly suggests a pipeline delay, source system outage, or missed ingestion job. Check the batch scheduler, source database connectivity, and any upstream SLA breaches.",
     "threshold": 48,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "82383fced90375824802a96aa0765a0d52b900a36c2ad6d9300a4634b6aac99d",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "e10467865b5f65de34c589831d23ffdb724d6aeabbcf407687a7040d87d9e977",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "new_category",
     "severity": "WARN",
@@ -53,12 +53,12 @@
     "delta": 0.0,
     "explanation": "A new category value 'MERCH_0050' appeared in column 'merchant_id' that was not present in the baseline dataset. This could indicate a new valid category being added to the source system, a data entry error, or schema drift from the upstream producer. Validate against the official data dictionary and update the allowed-values list if intentional.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "82383fced90375824802a96aa0765a0d52b900a36c2ad6d9300a4634b6aac99d",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "e10467865b5f65de34c589831d23ffdb724d6aeabbcf407687a7040d87d9e977",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "new_category",
     "severity": "WARN",
@@ -67,12 +67,12 @@
     "delta": 0.0,
     "explanation": "A new category value 'MERCH_0054' appeared in column 'merchant_id' that was not present in the baseline dataset. This could indicate a new valid category being added to the source system, a data entry error, or schema drift from the upstream producer. Validate against the official data dictionary and update the allowed-values list if intentional.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "82383fced90375824802a96aa0765a0d52b900a36c2ad6d9300a4634b6aac99d",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "e10467865b5f65de34c589831d23ffdb724d6aeabbcf407687a7040d87d9e977",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "new_category",
     "severity": "WARN",
@@ -81,12 +81,12 @@
     "delta": 0.0,
     "explanation": "A new category value 'MERCH_0058' appeared in column 'merchant_id' that was not present in the baseline dataset. This could indicate a new valid category being added to the source system, a data entry error, or schema drift from the upstream producer. Validate against the official data dictionary and update the allowed-values list if intentional.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "82383fced90375824802a96aa0765a0d52b900a36c2ad6d9300a4634b6aac99d",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "e10467865b5f65de34c589831d23ffdb724d6aeabbcf407687a7040d87d9e977",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "new_category",
     "severity": "WARN",
@@ -95,12 +95,12 @@
     "delta": 0.0,
     "explanation": "A new category value 'MERCH_0060' appeared in column 'merchant_id' that was not present in the baseline dataset. This could indicate a new valid category being added to the source system, a data entry error, or schema drift from the upstream producer. Validate against the official data dictionary and update the allowed-values list if intentional.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "82383fced90375824802a96aa0765a0d52b900a36c2ad6d9300a4634b6aac99d",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "e10467865b5f65de34c589831d23ffdb724d6aeabbcf407687a7040d87d9e977",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "new_category",
     "severity": "WARN",
@@ -109,12 +109,12 @@
     "delta": 0.0,
     "explanation": "A new category value 'MERCH_0062' appeared in column 'merchant_id' that was not present in the baseline dataset. This could indicate a new valid category being added to the source system, a data entry error, or schema drift from the upstream producer. Validate against the official data dictionary and update the allowed-values list if intentional.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "82383fced90375824802a96aa0765a0d52b900a36c2ad6d9300a4634b6aac99d",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "e10467865b5f65de34c589831d23ffdb724d6aeabbcf407687a7040d87d9e977",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "new_category",
     "severity": "WARN",
@@ -123,12 +123,12 @@
     "delta": 0.0,
     "explanation": "A new category value 'MERCH_0071' appeared in column 'merchant_id' that was not present in the baseline dataset. This could indicate a new valid category being added to the source system, a data entry error, or schema drift from the upstream producer. Validate against the official data dictionary and update the allowed-values list if intentional.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "82383fced90375824802a96aa0765a0d52b900a36c2ad6d9300a4634b6aac99d",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "e10467865b5f65de34c589831d23ffdb724d6aeabbcf407687a7040d87d9e977",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "new_category",
     "severity": "WARN",
@@ -137,12 +137,12 @@
     "delta": 0.0,
     "explanation": "A new category value 'MERCH_0076' appeared in column 'merchant_id' that was not present in the baseline dataset. This could indicate a new valid category being added to the source system, a data entry error, or schema drift from the upstream producer. Validate against the official data dictionary and update the allowed-values list if intentional.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "82383fced90375824802a96aa0765a0d52b900a36c2ad6d9300a4634b6aac99d",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "e10467865b5f65de34c589831d23ffdb724d6aeabbcf407687a7040d87d9e977",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "new_category",
     "severity": "WARN",
@@ -151,12 +151,12 @@
     "delta": 0.0,
     "explanation": "A new category value 'MERCH_0086' appeared in column 'merchant_id' that was not present in the baseline dataset. This could indicate a new valid category being added to the source system, a data entry error, or schema drift from the upstream producer. Validate against the official data dictionary and update the allowed-values list if intentional.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "82383fced90375824802a96aa0765a0d52b900a36c2ad6d9300a4634b6aac99d",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "e10467865b5f65de34c589831d23ffdb724d6aeabbcf407687a7040d87d9e977",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "new_category",
     "severity": "WARN",
@@ -165,12 +165,12 @@
     "delta": 0.0,
     "explanation": "A new category value 'MERCH_0092' appeared in column 'merchant_id' that was not present in the baseline dataset. This could indicate a new valid category being added to the source system, a data entry error, or schema drift from the upstream producer. Validate against the official data dictionary and update the allowed-values list if intentional.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "82383fced90375824802a96aa0765a0d52b900a36c2ad6d9300a4634b6aac99d",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "e10467865b5f65de34c589831d23ffdb724d6aeabbcf407687a7040d87d9e977",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "new_category",
     "severity": "WARN",
@@ -179,12 +179,12 @@
     "delta": 0.0,
     "explanation": "A new category value 'MERCH_0114' appeared in column 'merchant_id' that was not present in the baseline dataset. This could indicate a new valid category being added to the source system, a data entry error, or schema drift from the upstream producer. Validate against the official data dictionary and update the allowed-values list if intentional.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "82383fced90375824802a96aa0765a0d52b900a36c2ad6d9300a4634b6aac99d",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "e10467865b5f65de34c589831d23ffdb724d6aeabbcf407687a7040d87d9e977",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "new_category",
     "severity": "WARN",
@@ -193,12 +193,12 @@
     "delta": 0.0,
     "explanation": "A new category value 'MERCH_0121' appeared in column 'merchant_id' that was not present in the baseline dataset. This could indicate a new valid category being added to the source system, a data entry error, or schema drift from the upstream producer. Validate against the official data dictionary and update the allowed-values list if intentional.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "82383fced90375824802a96aa0765a0d52b900a36c2ad6d9300a4634b6aac99d",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "e10467865b5f65de34c589831d23ffdb724d6aeabbcf407687a7040d87d9e977",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "new_category",
     "severity": "WARN",
@@ -207,12 +207,12 @@
     "delta": 0.0,
     "explanation": "A new category value 'MERCH_0136' appeared in column 'merchant_id' that was not present in the baseline dataset. This could indicate a new valid category being added to the source system, a data entry error, or schema drift from the upstream producer. Validate against the official data dictionary and update the allowed-values list if intentional.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "82383fced90375824802a96aa0765a0d52b900a36c2ad6d9300a4634b6aac99d",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "e10467865b5f65de34c589831d23ffdb724d6aeabbcf407687a7040d87d9e977",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "new_category",
     "severity": "WARN",
@@ -221,12 +221,12 @@
     "delta": 0.0,
     "explanation": "A new category value 'MERCH_0140' appeared in column 'merchant_id' that was not present in the baseline dataset. This could indicate a new valid category being added to the source system, a data entry error, or schema drift from the upstream producer. Validate against the official data dictionary and update the allowed-values list if intentional.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "82383fced90375824802a96aa0765a0d52b900a36c2ad6d9300a4634b6aac99d",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "e10467865b5f65de34c589831d23ffdb724d6aeabbcf407687a7040d87d9e977",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "new_category",
     "severity": "WARN",
@@ -235,12 +235,12 @@
     "delta": 0.0,
     "explanation": "A new category value 'MERCH_0150' appeared in column 'merchant_id' that was not present in the baseline dataset. This could indicate a new valid category being added to the source system, a data entry error, or schema drift from the upstream producer. Validate against the official data dictionary and update the allowed-values list if intentional.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "82383fced90375824802a96aa0765a0d52b900a36c2ad6d9300a4634b6aac99d",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "e10467865b5f65de34c589831d23ffdb724d6aeabbcf407687a7040d87d9e977",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "new_category",
     "severity": "WARN",
@@ -249,12 +249,12 @@
     "delta": 0.0,
     "explanation": "A new category value 'MERCH_0157' appeared in column 'merchant_id' that was not present in the baseline dataset. This could indicate a new valid category being added to the source system, a data entry error, or schema drift from the upstream producer. Validate against the official data dictionary and update the allowed-values list if intentional.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "82383fced90375824802a96aa0765a0d52b900a36c2ad6d9300a4634b6aac99d",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "e10467865b5f65de34c589831d23ffdb724d6aeabbcf407687a7040d87d9e977",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "new_category",
     "severity": "WARN",
@@ -263,12 +263,12 @@
     "delta": 0.0,
     "explanation": "A new category value 'MERCH_0166' appeared in column 'merchant_id' that was not present in the baseline dataset. This could indicate a new valid category being added to the source system, a data entry error, or schema drift from the upstream producer. Validate against the official data dictionary and update the allowed-values list if intentional.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "82383fced90375824802a96aa0765a0d52b900a36c2ad6d9300a4634b6aac99d",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "e10467865b5f65de34c589831d23ffdb724d6aeabbcf407687a7040d87d9e977",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "new_category",
     "severity": "WARN",
@@ -277,12 +277,12 @@
     "delta": 0.0,
     "explanation": "A new category value 'MERCH_0181' appeared in column 'merchant_id' that was not present in the baseline dataset. This could indicate a new valid category being added to the source system, a data entry error, or schema drift from the upstream producer. Validate against the official data dictionary and update the allowed-values list if intentional.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "82383fced90375824802a96aa0765a0d52b900a36c2ad6d9300a4634b6aac99d",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "e10467865b5f65de34c589831d23ffdb724d6aeabbcf407687a7040d87d9e977",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "new_category",
     "severity": "WARN",
@@ -291,12 +291,12 @@
     "delta": 0.0,
     "explanation": "A new category value 'MERCH_0184' appeared in column 'merchant_id' that was not present in the baseline dataset. This could indicate a new valid category being added to the source system, a data entry error, or schema drift from the upstream producer. Validate against the official data dictionary and update the allowed-values list if intentional.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "82383fced90375824802a96aa0765a0d52b900a36c2ad6d9300a4634b6aac99d",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "e10467865b5f65de34c589831d23ffdb724d6aeabbcf407687a7040d87d9e977",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "new_category",
     "severity": "WARN",
@@ -305,12 +305,12 @@
     "delta": 0.0,
     "explanation": "A new category value 'MERCH_0192' appeared in column 'merchant_id' that was not present in the baseline dataset. This could indicate a new valid category being added to the source system, a data entry error, or schema drift from the upstream producer. Validate against the official data dictionary and update the allowed-values list if intentional.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "6bfdc2ce85077cea6717c88b5a358bcafec955b22946e83da8d49725c2bf0c28",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "fede2cab47bd0f8d44fd4bfc849f5e2f5735f3b5061ab413b0182a134356126a",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "missing_category",
     "severity": "INFO",
@@ -319,12 +319,12 @@
     "delta": 0.0,
     "explanation": "Category value 'MERCH_0008' from column 'merchant_id' is absent in the current batch. This was present in the baseline dataset. Possible causes: the category is no longer used, transactions of this type were not included in the batch window, or records were filtered upstream. Confirm with the data producer if this is expected.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "6bfdc2ce85077cea6717c88b5a358bcafec955b22946e83da8d49725c2bf0c28",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "fede2cab47bd0f8d44fd4bfc849f5e2f5735f3b5061ab413b0182a134356126a",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "missing_category",
     "severity": "INFO",
@@ -333,12 +333,12 @@
     "delta": 0.0,
     "explanation": "Category value 'MERCH_0029' from column 'merchant_id' is absent in the current batch. This was present in the baseline dataset. Possible causes: the category is no longer used, transactions of this type were not included in the batch window, or records were filtered upstream. Confirm with the data producer if this is expected.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "6bfdc2ce85077cea6717c88b5a358bcafec955b22946e83da8d49725c2bf0c28",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "fede2cab47bd0f8d44fd4bfc849f5e2f5735f3b5061ab413b0182a134356126a",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "missing_category",
     "severity": "INFO",
@@ -347,12 +347,12 @@
     "delta": 0.0,
     "explanation": "Category value 'MERCH_0045' from column 'merchant_id' is absent in the current batch. This was present in the baseline dataset. Possible causes: the category is no longer used, transactions of this type were not included in the batch window, or records were filtered upstream. Confirm with the data producer if this is expected.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "6bfdc2ce85077cea6717c88b5a358bcafec955b22946e83da8d49725c2bf0c28",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "fede2cab47bd0f8d44fd4bfc849f5e2f5735f3b5061ab413b0182a134356126a",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "missing_category",
     "severity": "INFO",
@@ -361,12 +361,12 @@
     "delta": 0.0,
     "explanation": "Category value 'MERCH_0048' from column 'merchant_id' is absent in the current batch. This was present in the baseline dataset. Possible causes: the category is no longer used, transactions of this type were not included in the batch window, or records were filtered upstream. Confirm with the data producer if this is expected.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "6bfdc2ce85077cea6717c88b5a358bcafec955b22946e83da8d49725c2bf0c28",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "fede2cab47bd0f8d44fd4bfc849f5e2f5735f3b5061ab413b0182a134356126a",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "missing_category",
     "severity": "INFO",
@@ -375,12 +375,12 @@
     "delta": 0.0,
     "explanation": "Category value 'MERCH_0049' from column 'merchant_id' is absent in the current batch. This was present in the baseline dataset. Possible causes: the category is no longer used, transactions of this type were not included in the batch window, or records were filtered upstream. Confirm with the data producer if this is expected.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "6bfdc2ce85077cea6717c88b5a358bcafec955b22946e83da8d49725c2bf0c28",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "fede2cab47bd0f8d44fd4bfc849f5e2f5735f3b5061ab413b0182a134356126a",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "missing_category",
     "severity": "INFO",
@@ -389,12 +389,12 @@
     "delta": 0.0,
     "explanation": "Category value 'MERCH_0056' from column 'merchant_id' is absent in the current batch. This was present in the baseline dataset. Possible causes: the category is no longer used, transactions of this type were not included in the batch window, or records were filtered upstream. Confirm with the data producer if this is expected.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "6bfdc2ce85077cea6717c88b5a358bcafec955b22946e83da8d49725c2bf0c28",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "fede2cab47bd0f8d44fd4bfc849f5e2f5735f3b5061ab413b0182a134356126a",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "missing_category",
     "severity": "INFO",
@@ -403,12 +403,12 @@
     "delta": 0.0,
     "explanation": "Category value 'MERCH_0057' from column 'merchant_id' is absent in the current batch. This was present in the baseline dataset. Possible causes: the category is no longer used, transactions of this type were not included in the batch window, or records were filtered upstream. Confirm with the data producer if this is expected.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "6bfdc2ce85077cea6717c88b5a358bcafec955b22946e83da8d49725c2bf0c28",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "fede2cab47bd0f8d44fd4bfc849f5e2f5735f3b5061ab413b0182a134356126a",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "missing_category",
     "severity": "INFO",
@@ -417,12 +417,12 @@
     "delta": 0.0,
     "explanation": "Category value 'MERCH_0065' from column 'merchant_id' is absent in the current batch. This was present in the baseline dataset. Possible causes: the category is no longer used, transactions of this type were not included in the batch window, or records were filtered upstream. Confirm with the data producer if this is expected.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "6bfdc2ce85077cea6717c88b5a358bcafec955b22946e83da8d49725c2bf0c28",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "fede2cab47bd0f8d44fd4bfc849f5e2f5735f3b5061ab413b0182a134356126a",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "missing_category",
     "severity": "INFO",
@@ -431,12 +431,12 @@
     "delta": 0.0,
     "explanation": "Category value 'MERCH_0075' from column 'merchant_id' is absent in the current batch. This was present in the baseline dataset. Possible causes: the category is no longer used, transactions of this type were not included in the batch window, or records were filtered upstream. Confirm with the data producer if this is expected.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "6bfdc2ce85077cea6717c88b5a358bcafec955b22946e83da8d49725c2bf0c28",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "fede2cab47bd0f8d44fd4bfc849f5e2f5735f3b5061ab413b0182a134356126a",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "missing_category",
     "severity": "INFO",
@@ -445,12 +445,12 @@
     "delta": 0.0,
     "explanation": "Category value 'MERCH_0085' from column 'merchant_id' is absent in the current batch. This was present in the baseline dataset. Possible causes: the category is no longer used, transactions of this type were not included in the batch window, or records were filtered upstream. Confirm with the data producer if this is expected.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "6bfdc2ce85077cea6717c88b5a358bcafec955b22946e83da8d49725c2bf0c28",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "fede2cab47bd0f8d44fd4bfc849f5e2f5735f3b5061ab413b0182a134356126a",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "missing_category",
     "severity": "INFO",
@@ -459,12 +459,12 @@
     "delta": 0.0,
     "explanation": "Category value 'MERCH_0087' from column 'merchant_id' is absent in the current batch. This was present in the baseline dataset. Possible causes: the category is no longer used, transactions of this type were not included in the batch window, or records were filtered upstream. Confirm with the data producer if this is expected.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "6bfdc2ce85077cea6717c88b5a358bcafec955b22946e83da8d49725c2bf0c28",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "fede2cab47bd0f8d44fd4bfc849f5e2f5735f3b5061ab413b0182a134356126a",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "missing_category",
     "severity": "INFO",
@@ -473,12 +473,12 @@
     "delta": 0.0,
     "explanation": "Category value 'MERCH_0097' from column 'merchant_id' is absent in the current batch. This was present in the baseline dataset. Possible causes: the category is no longer used, transactions of this type were not included in the batch window, or records were filtered upstream. Confirm with the data producer if this is expected.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "6bfdc2ce85077cea6717c88b5a358bcafec955b22946e83da8d49725c2bf0c28",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "fede2cab47bd0f8d44fd4bfc849f5e2f5735f3b5061ab413b0182a134356126a",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "missing_category",
     "severity": "INFO",
@@ -487,12 +487,12 @@
     "delta": 0.0,
     "explanation": "Category value 'MERCH_0103' from column 'merchant_id' is absent in the current batch. This was present in the baseline dataset. Possible causes: the category is no longer used, transactions of this type were not included in the batch window, or records were filtered upstream. Confirm with the data producer if this is expected.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "6bfdc2ce85077cea6717c88b5a358bcafec955b22946e83da8d49725c2bf0c28",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "fede2cab47bd0f8d44fd4bfc849f5e2f5735f3b5061ab413b0182a134356126a",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "missing_category",
     "severity": "INFO",
@@ -501,12 +501,12 @@
     "delta": 0.0,
     "explanation": "Category value 'MERCH_0109' from column 'merchant_id' is absent in the current batch. This was present in the baseline dataset. Possible causes: the category is no longer used, transactions of this type were not included in the batch window, or records were filtered upstream. Confirm with the data producer if this is expected.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "6bfdc2ce85077cea6717c88b5a358bcafec955b22946e83da8d49725c2bf0c28",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "fede2cab47bd0f8d44fd4bfc849f5e2f5735f3b5061ab413b0182a134356126a",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "missing_category",
     "severity": "INFO",
@@ -515,12 +515,12 @@
     "delta": 0.0,
     "explanation": "Category value 'MERCH_0122' from column 'merchant_id' is absent in the current batch. This was present in the baseline dataset. Possible causes: the category is no longer used, transactions of this type were not included in the batch window, or records were filtered upstream. Confirm with the data producer if this is expected.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "6bfdc2ce85077cea6717c88b5a358bcafec955b22946e83da8d49725c2bf0c28",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "fede2cab47bd0f8d44fd4bfc849f5e2f5735f3b5061ab413b0182a134356126a",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "missing_category",
     "severity": "INFO",
@@ -529,12 +529,12 @@
     "delta": 0.0,
     "explanation": "Category value 'MERCH_0160' from column 'merchant_id' is absent in the current batch. This was present in the baseline dataset. Possible causes: the category is no longer used, transactions of this type were not included in the batch window, or records were filtered upstream. Confirm with the data producer if this is expected.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "6bfdc2ce85077cea6717c88b5a358bcafec955b22946e83da8d49725c2bf0c28",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "fede2cab47bd0f8d44fd4bfc849f5e2f5735f3b5061ab413b0182a134356126a",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "missing_category",
     "severity": "INFO",
@@ -543,12 +543,12 @@
     "delta": 0.0,
     "explanation": "Category value 'MERCH_0161' from column 'merchant_id' is absent in the current batch. This was present in the baseline dataset. Possible causes: the category is no longer used, transactions of this type were not included in the batch window, or records were filtered upstream. Confirm with the data producer if this is expected.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "6bfdc2ce85077cea6717c88b5a358bcafec955b22946e83da8d49725c2bf0c28",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "fede2cab47bd0f8d44fd4bfc849f5e2f5735f3b5061ab413b0182a134356126a",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "missing_category",
     "severity": "INFO",
@@ -557,12 +557,12 @@
     "delta": 0.0,
     "explanation": "Category value 'MERCH_0178' from column 'merchant_id' is absent in the current batch. This was present in the baseline dataset. Possible causes: the category is no longer used, transactions of this type were not included in the batch window, or records were filtered upstream. Confirm with the data producer if this is expected.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   },
   {
-    "alert_id": "6bfdc2ce85077cea6717c88b5a358bcafec955b22946e83da8d49725c2bf0c28",
-    "run_id": "REVIEW_20261030_01",
-    "baseline_run_id": "REVIEW_20261030_01_BASELINE",
+    "alert_id": "fede2cab47bd0f8d44fd4bfc849f5e2f5735f3b5061ab413b0182a134356126a",
+    "run_id": "CI_RUN_001",
+    "baseline_run_id": "CI_RUN_001_BASELINE",
     "column": "merchant_id",
     "metric": "missing_category",
     "severity": "INFO",
@@ -571,6 +571,6 @@
     "delta": 0.0,
     "explanation": "Category value 'MERCH_0188' from column 'merchant_id' is absent in the current batch. This was present in the baseline dataset. Possible causes: the category is no longer used, transactions of this type were not included in the batch window, or records were filtered upstream. Confirm with the data producer if this is expected.",
     "threshold": 0.0,
-    "triggered_at": "2026-10-29T20:23:06Z"
+    "triggered_at": "2026-10-31T04:55:20Z"
   }
 ]
